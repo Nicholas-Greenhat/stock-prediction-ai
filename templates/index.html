@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market Prediction AI</title>
+    
+    <!-- External Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         body {
             background-color: #f8f9fa;
@@ -99,21 +102,26 @@
     </style>
 </head>
 <body>
+    <!-- Navigation Bar -->
     <nav class="navbar navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="#">Stock Prediction AI</a>
         </div>
     </nav>
 
+    <!-- Main Content Container -->
     <div class="container mt-4">
         <div class="row">
+            <!-- Left Column: Input Controls -->
             <div class="col-md-4">
+                <!-- Prediction Parameters Card -->
                 <div class="card">
                     <div class="card-header">
                         Stock Prediction Parameters
                     </div>
                     <div class="card-body">
                         <form id="predictionForm">
+                            <!-- Stock Selection -->
                             <div class="mb-3">
                                 <label for="stockSelect" class="form-label">Stock File</label>
                                 <select class="form-select" id="stockSelect">
@@ -124,6 +132,8 @@
                                     <option value="AMZN">AMZN - Amazon</option>
                                 </select>
                             </div>
+                            
+                            <!-- Algorithm Selection -->
                             <div class="mb-3">
                                 <label for="algorithmSelect" class="form-label">ML Algorithm</label>
                                 <select class="form-select" id="algorithmSelect">
@@ -132,6 +142,8 @@
                                     <option value="svr">Support Vector Regression</option>
                                 </select>
                             </div>
+                            
+                            <!-- Data Period Selection -->
                             <div class="mb-3">
                                 <label for="periodSelect" class="form-label">Data Period</label>
                                 <select class="form-select" id="periodSelect">
@@ -142,35 +154,46 @@
                                     <option value="2y">2 Years</option>
                                 </select>
                             </div>
+                            
+                            <!-- Submit Button -->
                             <button type="submit" class="btn btn-primary w-100">Fetch Data & Predict</button>
                         </form>
+                        
+                        <!-- Data Source Info -->
                         <div class="kaggle-info">
                             <strong>Data Source:</strong> Yahoo Finance API
                         </div>
                     </div>
                 </div>
 
+                <!-- Decision Boundaries Card -->
                 <div class="card mt-4">
                     <div class="card-header">
                         Decision Boundaries
                     </div>
                     <div class="card-body">
+                        <!-- Data Statistics -->
                         <div class="mb-3">
                             <strong>Data Points: </strong><span id="dataCount">0</span>
                         </div>
                         <div>
                             <strong>Training Points: </strong><span id="trainingCount">0</span>
                         </div>
+                        
+                        <!-- Recent Dates List -->
                         <div class="mt-3">
                             <strong>Recent Dates:</strong>
                             <div class="date-list" id="dateList">
+                                <!-- Dates will be populated by JavaScript -->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Right Column: Results Display -->
             <div class="col-md-8">
+                <!-- Loading Indicator -->
                 <div class="loading" id="loadingIndicator">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -178,7 +201,9 @@
                     <p class="mt-2">Fetching data and training model...</p>
                 </div>
 
+                <!-- Results Section (Initially Hidden) -->
                 <div id="resultsSection">
+                    <!-- Model Evaluation Card -->
                     <div class="card">
                         <div class="card-header">
                             Model Evaluation
@@ -204,6 +229,7 @@
                         </div>
                     </div>
 
+                    <!-- Prediction Results Card -->
                     <div class="card mt-4">
                         <div class="card-header">
                             Prediction Results
@@ -231,12 +257,14 @@
                                 </tbody>
                             </table>
 
+                            <!-- Chart Container -->
                             <div class="chart-container">
                                 <canvas id="predictionChart"></canvas>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Metrics Cards -->
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <div class="card metric-card">
@@ -256,19 +284,25 @@
         </div>
     </div>
 
+    <!-- JavaScript Application Logic -->
     <script>
+        // Global chart instance
         let predictionChart;
         
+        /**
+         * Initialize the Chart.js line chart for visualizing predictions.
+         * Creates a dual-line chart for actual vs predicted prices.
+         */
         function initializeChart() {
             const ctx = document.getElementById('predictionChart').getContext('2d');
             predictionChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: [],
+                    labels: [],  // Dates will be populated
                     datasets: [
                         {
                             label: 'Actual Opening Price',
-                            data: [],
+                            data: [],  // Actual prices
                             borderColor: 'rgb(54, 162, 235)',
                             backgroundColor: 'rgba(54, 162, 235, 0.1)',
                             tension: 0.1,
@@ -276,12 +310,12 @@
                         },
                         {
                             label: 'Predicted Opening Price',
-                            data: [],
+                            data: [],  // Predicted prices
                             borderColor: 'rgb(255, 99, 132)',
                             backgroundColor: 'rgba(255, 99, 132, 0.1)',
                             tension: 0.1,
                             fill: true,
-                            borderDash: [5, 5]
+                            borderDash: [5, 5]  // Dashed line for predictions
                         }
                     ]
                 },
@@ -316,17 +350,25 @@
             });
         }
 
+        /**
+         * Handle form submission to fetch predictions from the backend API.
+         * Shows loading indicator, makes POST request, and updates UI with results.
+         * Includes fallback to simulated data if API request fails.
+         */
         document.getElementById('predictionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Get user selections
             const stock = document.getElementById('stockSelect').value;
             const algorithm = document.getElementById('algorithmSelect').value;
             const period = document.getElementById('periodSelect').value;
             
+            // Show loading, hide results
             document.getElementById('loadingIndicator').style.display = 'block';
             document.getElementById('resultsSection').style.display = 'none';
             
             try {
+                // Make API request to Flask backend
                 const response = await fetch('/predict', {
                     method: 'POST',
                     headers: {
@@ -343,38 +385,53 @@
                     throw new Error('Network response was not ok');
                 }
                 
+                // Process successful response
                 const result = await response.json();
                 updateUIWithResults(result);
                 
             } catch (error) {
+                // Fallback to simulated data on error
                 console.error('Error:', error);
                 simulatePrediction(stock, algorithm);
             } finally {
+                // Hide loading, show results
                 document.getElementById('loadingIndicator').style.display = 'none';
                 document.getElementById('resultsSection').style.display = 'block';
             }
         });
 
+        /**
+         * Update the UI with prediction results from the backend.
+         * Updates all display elements with real data from the API response.
+         * 
+         * @param {Object} result - Prediction results from Flask API
+         */
         function updateUIWithResults(result) {
+            // Update model evaluation
             document.getElementById('modelName').textContent = result.model;
             document.getElementById('mseValue').textContent = result.mse.toFixed(6);
             
+            // Update price predictions
             document.getElementById('originalValue').textContent = '$' + result.last_actual_open.toFixed(2);
             document.getElementById('predictionValue').textContent = '$' + result.next_day_prediction.toFixed(2);
             document.getElementById('predictionModel').textContent = result.model;
             
+            // Update chart with new data
             predictionChart.data.labels = result.dates;
             predictionChart.data.datasets[0].data = result.actual_prices;
             predictionChart.data.datasets[1].data = result.predicted_prices;
             predictionChart.update();
             
+            // Calculate and display accuracy metrics
             const accuracy = 100 - (result.mse / result.last_actual_open * 100);
             document.getElementById('accuracyValue').textContent = accuracy.toFixed(1) + '%';
             document.getElementById('errorValue').textContent = (result.mse / result.last_actual_open * 100).toFixed(1) + '%';
             
+            // Update data statistics
             document.getElementById('dataCount').textContent = result.data_points;
             document.getElementById('trainingCount').textContent = result.training_points;
             
+            // Update recent dates list
             const dateList = document.getElementById('dateList');
             dateList.innerHTML = '';
             
@@ -386,12 +443,22 @@
             });
         }
 
+        /**
+         * Generate simulated prediction data for demonstration or fallback.
+         * Creates realistic-looking data when backend API is unavailable.
+         * 
+         * @param {string} stock - Selected stock symbol
+         * @param {string} algorithm - Selected ML algorithm
+         */
         function simulatePrediction(stock, algorithm) {
+            // Get model display name
             const modelName = document.getElementById('algorithmSelect').options[document.getElementById('algorithmSelect').selectedIndex].text;
             
+            // Update model info with simulated data
             document.getElementById('modelName').textContent = modelName;
             document.getElementById('mseValue').textContent = (0.4 + Math.random() * 0.1).toFixed(6);
             
+            // Generate simulated prices
             const originalPrice = (100 + Math.random() * 20).toFixed(2);
             const predictedPrice = (originalPrice * (0.97 + Math.random() * 0.06)).toFixed(2);
             
@@ -399,11 +466,8 @@
             document.getElementById('predictionValue').textContent = '$' + predictedPrice;
             document.getElementById('predictionModel').textContent = modelName;
             
+            // Generate dates for last 8 days
             const today = new Date();
-            
-            const newActualData = Array.from({length: 8}, () => 100 + Math.random() * 15);
-            const newPredictedData = newActualData.map(value => value * (0.97 + Math.random() * 0.06));
-            
             const dates = [];
             for (let i = 7; i >= 0; i--) {
                 const date = new Date();
@@ -411,20 +475,28 @@
                 dates.push(date.toISOString().split('T')[0]);
             }
             
+            // Generate simulated price data
+            const newActualData = Array.from({length: 8}, () => 100 + Math.random() * 15);
+            const newPredictedData = newActualData.map(value => value * (0.97 + Math.random() * 0.06));
+            
+            // Update chart with simulated data
             predictionChart.data.labels = dates;
             predictionChart.data.datasets[0].data = newActualData;
             predictionChart.data.datasets[1].data = newPredictedData;
             predictionChart.update();
             
+            // Generate simulated metrics
             const accuracy = (90 + Math.random() * 8).toFixed(1);
             const error = (1.5 + Math.random() * 1.5).toFixed(1);
             
             document.getElementById('accuracyValue').textContent = accuracy + '%';
             document.getElementById('errorValue').textContent = error + '%';
             
+            // Update data statistics
             document.getElementById('dataCount').textContent = Math.floor(100 + Math.random() * 50);
             document.getElementById('trainingCount').textContent = Math.floor(90 + Math.random() * 40);
             
+            // Generate recent dates list
             const dateList = document.getElementById('dateList');
             dateList.innerHTML = '';
             
@@ -438,6 +510,7 @@
             }
         }
 
+        // Initialize chart when page loads
         window.onload = function() {
             initializeChart();
         };
