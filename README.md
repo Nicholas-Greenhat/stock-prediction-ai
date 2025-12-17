@@ -305,10 +305,3 @@ Ready for:
 
 ---
 
-If you want next:
-
-* 🚀 **Production deployment guide**
-* 🧠 **Deep learning extension**
-* 🧪 **Unit tests & CI**
-* 📊 **Model comparison dashboard**
-
