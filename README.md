@@ -1,10 +1,4 @@
-﻿Excellent — thanks for sharing the **full frontend (HTML/JS), backend (Flask API), and requirements**. Based on this, here is a **production-ready, portfolio-quality `README.md`** that is **fully aligned with your actual code**, structure, endpoints, UI behavior, and ML pipeline.
-
-You can **copy-paste this directly as `README.md`**.
-
----
-
-# 📈 Stock Market Prediction AI
+﻿# 📈 Stock Market Prediction AI
 
 **A Machine Learning–Powered Web Application for Stock Price Forecasting**
 
